@@ -1,0 +1,3 @@
+record_no,target_id,stage,field,problem_type,value,description
+4,780bad,encode,timestamp,MISSING_REQUIRED,,timestamp 必需字段缺失，无法封装消息
+5,780bee,encode,heading,RANGE_ERROR,360.0,"字段量程越界：360.0 不在 [0.0, 360.0)"

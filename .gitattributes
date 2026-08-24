@@ -1,0 +1,2 @@
+# Binary protocol/data files must never undergo line-ending conversion.
+*.bin binary

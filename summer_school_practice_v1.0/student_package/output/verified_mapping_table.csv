@@ -1,0 +1,31 @@
+source_format,input_field,unified_field,mapping_rule,unit_conversion,null_strategy,evidence,verified
+OpenSky,target_id,track_id,转为六位小写十六进制，保留前导0,无,target_id必需，不置空,候选“直接改为小写字符串”方向正确，补充保留前导0,是
+OpenSky,latest_time,timestamp,直接映射Unix秒,无（Unix second）,必须为正整数，否则quality.time_valid=false,候选正确，补充正整数检查,是
+OpenSky,callsign,identity.callsign,去除首尾空格后映射,无,空字符串置null,候选缺失，依据字段字典补充,是
+OpenSky,lat,position.lat,直接映射纬度,degree,空置null,候选缺失，依据字段字典补充,是
+OpenSky,lon,position.lon,直接映射经度,degree,空置null,候选缺失，依据字段字典补充,是
+OpenSky,altitude,position.alt,直接映射高度,meter,空置null,候选缺失，依据字段字典补充,是
+OpenSky,baro/geo来源,position.alt_type,气压优先、几何回退,枚举barometric/geometric/unknown,高度无效时unknown,候选缺失，依据字段字典补充,是
+OpenSky,speed,motion.speed,直接映射地速,m/s,空置null,候选缺失，依据字段字典补充,是
+OpenSky,heading,motion.heading,"直接映射航向，要求[0,360)",degree,空置null,候选缺失，依据字段字典补充,是
+OpenSky,vertical_rate,motion.vertical_rate,直接映射垂直速度,m/s,空置null,候选缺失，依据字段字典补充,是
+OpenSky,on_ground,status.on_ground,转换为布尔值,boolean,on_ground必需，不置空,候选缺失，依据字段字典补充,是
+OpenSky,lat/lon,quality.position_valid,纬经均非空且处于合法范围,boolean,任一缺失即false,候选缺失，依据source_field_definitions补充,是
+OpenSky,latest_time,quality.time_valid,latest_time为正整数,boolean,缺失或非正整数即false,候选缺失，依据source_field_definitions补充,是
+OpenSky,源记录结构校验结果,quality.message_valid,直接映射源记录结构校验结果,boolean,结构非法即false,候选“不得扩大为来源可信”正确,是
+OpenSky,timestamp_source,quality.time_source,position_time或last_contact_fallback,枚举,默认position_time,候选缺失，依据source_field_definitions补充,是
+TeachingLink,target_id,track_id,转为六位小写十六进制，保留前导0,无,target_id必需，不置空,候选“直接改为小写字符串”方向正确，补充保留前导0,是
+TeachingLink,latest_time,timestamp,直接映射Unix秒,无（Unix second）,必须为正整数,候选“直接映射Unix秒”正确，补充正整数检查,是
+TeachingLink,callsign+validity_flags.bit6,identity.callsign,有效时去除补0，无效时null,无,validity_flags.bit6=0时置null,候选遗漏有效性位检查，已补充bit6判断,是
+TeachingLink,latitude_code+validity_flags.bit0,position.lat,有效时按22位纬度公式恢复,code/(2^22-1)*180-90（degree）,validity_flags.bit0=0时置null,候选误把纬度映射为position.lon，已修正为position.lat,是
+TeachingLink,longitude_code+validity_flags.bit1,position.lon,有效时按22位经度公式恢复,code/(2^22-1)*360-180（degree）,validity_flags.bit1=0时置null,候选误把经度映射为position.lat，已修正为position.lon,是
+TeachingLink,altitude_code+validity_flags.bit2,position.alt,有效时code减物理偏置,code-1000（meter）,validity_flags.bit2=0时置null,候选“code乘1米”遗漏物理偏置-1000，已修正为code-1000,是
+TeachingLink,status_flags.bit1,position.alt_type,0=barometric、1=geometric,枚举barometric/geometric/unknown,高度无效时unknown,候选缺失，依据source_field_definitions补充,是
+TeachingLink,speed_code+validity_flags.bit3,motion.speed,有效时code乘0.1,code*0.1（m/s）,validity_flags.bit3=0时置null,候选缺失，依据source_field_definitions补充,是
+TeachingLink,heading_code+validity_flags.bit4,motion.heading,有效时code乘0.01且小于360,code*0.01（degree）,validity_flags.bit4=0时置null,候选缺失，依据source_field_definitions补充,是
+TeachingLink,vertical_rate_code+validity_flags.bit5,motion.vertical_rate,有效时code乘0.01减偏置,code*0.01-327.68（m/s）,validity_flags.bit5=0时置null,候选缺失，依据source_field_definitions补充,是
+TeachingLink,status_flags.bit0,status.on_ground,bit0转换为布尔值,boolean,不置空,候选缺失，依据source_field_definitions补充,是
+TeachingLink,validity_flags.bit0+bit1,quality.position_valid,纬经有效位均为1且解码值在合法范围,boolean,任一无效即false,候选缺失，依据source_field_definitions补充,是
+TeachingLink,timestamp,quality.time_valid,timestamp为正整数且帧接收结果通过,boolean,非正整数即false；时间回退不等于时间无效,候选误把status_flags.bit2映射为time_valid，已修正；bit2真实语义是time_source,是
+TeachingLink,message_valid,quality.message_valid,直接映射完整帧接收判据,boolean,不置空,候选“不得扩大为来源可信”正确,是
+TeachingLink,status_flags.bit2,quality.time_source,0=position_time、1=last_contact_fallback,枚举,默认position_time,候选把bit2误当time_valid，已修正为time_source,是
