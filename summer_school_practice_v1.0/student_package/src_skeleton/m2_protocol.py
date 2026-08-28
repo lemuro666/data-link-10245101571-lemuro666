@@ -261,11 +261,13 @@ def decode_position_message(data: bytes) -> dict[str, Any]:
     非法帧记录到 validation_errors 并把 message_valid 置为 False，不抛出异常。
     """
     errors: list[str] = []
+    error_types: list[str] = []
 
     if len(data) != FRAME_SIZE:
         return {
             "message_valid": False,
             "validation_errors": [f"帧长度错误：{len(data)} != {FRAME_SIZE}"],
+            "validation_error_types": ["LENGTH_ERROR"],
             "target_id": None,
             "callsign": None,
             "timestamp": None,
@@ -304,26 +306,35 @@ def decode_position_message(data: bytes) -> dict[str, Any]:
     # 头字段。
     if magic != MAGIC:
         errors.append(f"magic 错误：{magic:#06x} != {MAGIC:#06x}")
+        error_types.append("MAGIC_ERROR")
     if version != VERSION:
         errors.append(f"version 错误：{version} != {VERSION}")
+        error_types.append("VERSION_ERROR")
     if message_type != MESSAGE_TYPE:
         errors.append(f"message_type 错误：{message_type} != {MESSAGE_TYPE}")
+        error_types.append("MESSAGE_TYPE_ERROR")
     if message_length != MESSAGE_LENGTH:
         errors.append(f"message_length 错误：{message_length} != {MESSAGE_LENGTH}")
+        error_types.append("LENGTH_ERROR")
     if checksum != expected_checksum:
         errors.append(f"校验和错误：收到 {checksum:#06x}，期望 {expected_checksum:#06x}")
+        error_types.append("CHECKSUM_ERROR")
 
     # 经纬度容器最高 2 位保留位必须为 0。
     if lat_code >> 22:
         errors.append(f"latitude_code 保留位非零：{lat_code:#08x}")
+        error_types.append("RESERVED_BITS_ERROR")
     if lon_code >> 22:
         errors.append(f"longitude_code 保留位非零：{lon_code:#08x}")
+        error_types.append("RESERVED_BITS_ERROR")
 
     # 两个标志字节保留位必须为 0。
     if status_flags & 0xF8:
         errors.append(f"status_flags 保留位非零：{status_flags:#04x}")
+        error_types.append("RESERVED_BITS_ERROR")
     if validity_flags & 0x80:
         errors.append(f"validity_flags 保留位非零：{validity_flags:#04x}")
+        error_types.append("RESERVED_BITS_ERROR")
 
     # 必需字段：target_id 必须是合法六位十六进制。
     target_id = target_id_bytes.hex()
@@ -347,18 +358,25 @@ def decode_position_message(data: bytes) -> dict[str, Any]:
     # 标志/占位一致性：无效位对应的占位整数必须为 0。
     if not lat_valid and lat_code != 0:
         errors.append(f"latitude 无效但占位非零：{lat_code}")
+        error_types.append("FLAG_VALUE_INCONSISTENCY")
     if not lon_valid and lon_code != 0:
         errors.append(f"longitude 无效但占位非零：{lon_code}")
+        error_types.append("FLAG_VALUE_INCONSISTENCY")
     if not altitude_valid and altitude_code != 0:
         errors.append(f"altitude 无效但占位非零：{altitude_code}")
+        error_types.append("FLAG_VALUE_INCONSISTENCY")
     if not speed_valid and speed_code != 0:
         errors.append(f"speed 无效但占位非零：{speed_code}")
+        error_types.append("FLAG_VALUE_INCONSISTENCY")
     if not heading_valid and heading_code != 0:
         errors.append(f"heading 无效但占位非零：{heading_code}")
+        error_types.append("FLAG_VALUE_INCONSISTENCY")
     if not vertical_rate_valid and vertical_rate_code != 0:
         errors.append(f"vertical_rate 无效但占位非零：{vertical_rate_code}")
+        error_types.append("FLAG_VALUE_INCONSISTENCY")
     if not callsign_valid and callsign_bytes != b"\x00" * 8:
         errors.append("callsign 无效但占位非零")
+        error_types.append("FLAG_VALUE_INCONSISTENCY")
 
     # 恢复物理量。
     lat = lat_code / LAT_LON_CODE_MAX * 180.0 - 90.0 if lat_valid else None
@@ -412,5 +430,6 @@ def decode_position_message(data: bytes) -> dict[str, Any]:
         "expected_checksum": expected_checksum,
         "message_valid": len(errors) == 0,
         "validation_errors": errors,
+        "validation_error_types": error_types,
         "source": "TeachingLink",
     }

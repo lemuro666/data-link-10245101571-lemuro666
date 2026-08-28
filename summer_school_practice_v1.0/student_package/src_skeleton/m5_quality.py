@@ -24,6 +24,10 @@ def _to_int(value: Any) -> int | None:
         return None
 
 
+def _record_time(record: dict[str, Any]) -> int | None:
+    return _to_int(record.get("latest_time")) or _to_int(record.get("timestamp"))
+
+
 def _to_bool(value: Any) -> bool:
     if isinstance(value, bool):
         return value
@@ -41,7 +45,7 @@ def check_record(record: dict[str, Any], batch_time: int = BATCH_TIME) -> list[d
     lat = _to_float(record.get("lat"))
     lon = _to_float(record.get("lon"))
     heading = _to_float(record.get("heading"))
-    timestamp = _to_int(record.get("timestamp"))
+    timestamp = _record_time(record)
 
     # R1：位置缺失。
     if lat is None or lon is None:
@@ -136,7 +140,7 @@ def build_quality_situation(records: list[dict[str, Any]], alerts: list[dict[str
         key = (target_id, timestamp)
         duplicate_detected = key in seen
         seen.add(key)
-        heading_valid = heading is not None and 0.0 <= heading < 360.0
+        heading_valid = heading is None or 0.0 <= heading < 360.0
 
         issues: list[str] = []
         anomaly_level = "NONE"
@@ -163,7 +167,11 @@ def build_quality_situation(records: list[dict[str, Any]], alerts: list[dict[str
                 "heading_valid": heading_valid,
                 "message_valid": message_valid,
                 "anomaly_level": anomaly_level,
-                "display_status": "；".join(issues) if issues else "正常",
+                "display_status": (
+                    "ERROR" if anomaly_level == "HIGH"
+                    else "WARNING" if anomaly_level == "MEDIUM"
+                    else "NORMAL"
+                ),
             }
         )
 

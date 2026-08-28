@@ -1,3 +1,10 @@
 record_no,target_id,stage,field,problem_type,value,description
-4,780bad,encode,timestamp,MISSING_REQUIRED,,timestamp 必需字段缺失，无法封装消息
-5,780bee,encode,heading,RANGE_ERROR,360.0,"字段量程越界：360.0 不在 [0.0, 360.0)"
+4,780bad,encode,timestamp,REQUIRED_FIELD_MISSING,,timestamp 必需字段缺失，无法封装消息
+5,780bee,encode,heading,OUT_OF_RANGE,360.0,"字段量程越界：360.0 不在 [0.0, 360.0)"
+bad_frame_1,780abc,decode,frame_length,LENGTH_ERROR,,帧长度错误：40 != 41
+bad_frame_2,780abc,decode,magic,MAGIC_ERROR,,magic 错误：0x0053 != 0x4453
+bad_frame_3,780abc,decode,version,VERSION_ERROR,,version 错误：2 != 1
+bad_frame_4,780abc,decode,message_type,MESSAGE_TYPE_ERROR,,message_type 错误：2 != 1
+bad_frame_5,780abc,decode,checksum,CHECKSUM_ERROR,,校验和错误：收到 0x0a77，期望 0x0a76
+bad_frame_6,780abc,decode,reserved_bits,RESERVED_BITS_ERROR,,status_flags 保留位非零：0x08
+bad_frame_7,780abc,decode,validity_flags,FLAG_VALUE_INCONSISTENCY,,latitude 无效但占位非零：2824872

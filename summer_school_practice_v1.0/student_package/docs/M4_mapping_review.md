@@ -11,4 +11,5 @@
 - 人工修订依据：字段字典的“source/meaning”列、`source_field_definitions.md` 的双格式规则表、`teaching_message_spec.md` 的定点编码与标志位定义。
 - 正常样例验证结果：`000001`（全部字段有效、真实零值）映射后 `position_valid=true`、`alt=20`、`speed=20`、`heading=90`，均与解码结果一致。
 - 真实零值与缺失值样例验证结果：`000001` 的高度/速度/航向/垂直速度为真实 0 值，编码为有效（`validity_flags=127`）且解码为 0；`780def` 的纬度/经度/速度缺失（`validity_flags=52`），映射后为 `null` 且 `position_valid=false`，未把缺失值误当 0。
+- 双来源输出验证结果：`unified_situation.ndjson` 共 6 行，其中 3 行来自 M3 生成的 OpenSky 当前态势，3 行来自 TeachingLink 当前态势样例；每行均可用 JSON 重新读取，`source` 字段明确标识 `OpenSky` 或 `TeachingLink`。
 - 不应由大模型自行决定的内容：字节序、位宽、比例因子、偏置、保留位、有效性位语义、量程边界等协议约定，以及“真实零值与缺失值”的区分，均以学校 Schema 为准，不由大模型自行推定。

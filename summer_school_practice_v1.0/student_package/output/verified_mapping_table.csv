@@ -1,4 +1,4 @@
-source_format,input_field,unified_field,mapping_rule,unit_conversion,null_strategy,evidence,verified
+            source_format,input_field,unified_field,mapping_rule,unit_conversion,null_strategy,evidence,verified
 OpenSky,target_id,track_id,转为六位小写十六进制，保留前导0,无,target_id必需，不置空,候选“直接改为小写字符串”方向正确，补充保留前导0,是
 OpenSky,latest_time,timestamp,直接映射Unix秒,无（Unix second）,必须为正整数，否则quality.time_valid=false,候选正确，补充正整数检查,是
 OpenSky,callsign,identity.callsign,去除首尾空格后映射,无,空字符串置null,候选缺失，依据字段字典补充,是

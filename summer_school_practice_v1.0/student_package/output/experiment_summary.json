@@ -1,0 +1,14 @@
+{
+  "source": "data/opensky_real/source/*.json",
+  "source_vector_count": 71,
+  "selected_source_count": 71,
+  "transmitted_frame_count": 71,
+  "transmitted_bytes": 2911,
+  "decoded_record_count": 71,
+  "valid_decoded_record_count": 71,
+  "current_target_count": 24,
+  "sqlite_output": "output/received_states.db",
+  "precision_rows": 426,
+  "precision_passed_rows": 426,
+  "encoding_reject_count": 0
+}
